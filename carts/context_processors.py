@@ -15,10 +15,13 @@ def counter(request):
         try:
             # Get the cart for the current session using the cart_id
             cart = Cart.objects.filter(cart_id=_cart_id(request))
-            
-            # Get all cart items associated with the retrieved cart(s)
-            # cart[:1] ensures only one cart is passed to the filter
-            cart_items = CartItem.objects.all().filter(cart=cart[:1])
+
+            if request.user.is_authenticated:
+                cart_items = CartItem.objects.all().filter(user=request.user)
+            else:
+                # Get all cart items associated with the retrieved cart(s)
+                # cart[:1] ensures only one cart is passed to the filter
+                cart_items = CartItem.objects.all().filter(cart=cart[:1])
             
             # Iterate through the cart items and sum up their quantities
             for cart_item in cart_items:

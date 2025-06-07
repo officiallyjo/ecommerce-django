@@ -54,10 +54,10 @@ class Account(AbstractBaseUser):
     # required
     date_joined = models.DateTimeField(auto_now_add =True) # Record the date and time the account was created
     last_login = models.DateTimeField(auto_now_add =True)# Record the last login date and time
-    is_admin = models.BooleanField(default=True )# Boolean field to check if the user is an admin
-    is_staff = models.BooleanField(default=True )# Boolean field to check if the user is a staff member
-    is_active = models.BooleanField(default=True ) # Boolean field to check if the user account is active
-    is_superadmin = models.BooleanField(default=True )# Boolean field to check if the user is a superadmin
+    is_admin = models.BooleanField(default=False )# Boolean field to check if the user is an admin
+    is_staff = models.BooleanField(default=False )# Boolean field to check if the user is a staff member
+    is_active = models.BooleanField(default=False ) # Boolean field to check if the user account is active
+    is_superadmin = models.BooleanField(default=True)# Boolean field to check if the user is a superadmin
     
     # part of required models
     # Setting the login field to email
