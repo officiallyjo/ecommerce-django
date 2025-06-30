@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from carts.models import CartItem
 from .forms import OrderForm
 import datetime
-from .models import Order,Payment
+from .models import Order,Payment, OrderProduct
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-
+from store.models import Product
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 
 
 
@@ -28,7 +30,60 @@ def payments(request):
     order.save()
 
 
-    return render(request,'orders/payments.html')
+    cart_items = CartItem.objects.filter(user=request.user)
+
+    for item in cart_items:
+        orderproduct = OrderProduct()
+        orderproduct.order = order
+        orderproduct.payment = payment
+        orderproduct.user = request.user
+        orderproduct.product = item.product  # ✅ Correct: this is a Product instance
+        orderproduct.quantity = item.quantity
+        orderproduct.product_price = item.product.price  # Or item.product_price if it exists
+        orderproduct.ordered = True
+        orderproduct.save()
+
+      
+        cart_item =CartItem.objects.get(id=item.id)
+        product_variation = cart_item.variations.all()
+        orderproduct =OrderProduct.objects.get(id=orderproduct.id)
+        orderproduct.variations.set(product_variation)
+        orderproduct.save()
+
+        #reduce the quantity of sold items
+        product = Product.objects.get(id=item.product_id)
+        product.stock -= item.quantity
+        product.save()
+
+
+    #clear cart
+
+    CartItem.objects.filter(user=request.user).delete()
+
+    # send order recieved email to customer
+    
+    # email_subject ="please activate your account"
+    # message =render_to_string('orders/order_recieved_email.html',{
+    #     'user': request.user,
+    #     'order' : order
+           
+    # })
+    # to_email = request.user.email
+    # send_email =EmailMessage(email_subject, message,to=[to_email])
+    # send_email.send()
+
+    #send order number and transaction_id back to sendData method via JsonResponse
+
+    data = {
+        'order_number' : order.order_number,
+        'transID' : payment.payment_id,
+         
+    }
+    return JsonResponse(data)
+
+
+
+
 
 def place_order(request , total=0, quantity=0):
     current_user = request.user
@@ -93,13 +148,41 @@ def place_order(request , total=0, quantity=0):
         #     return redirect('checkout')  # ✅ FIXED: ensures a response is returned even if form is invalid
     else:
         return redirect('checkout')
+    
+
+
+def order_complete(request):
+    order_numnber = request.GET.get('order_number')
+    transID =request.GET.get('payment_id')
+    
+    try :
+        order = Order.objects.get(order_number = order_numnber, is_ordered = True)
+        ordered_products = OrderProduct.objects.filter(order_id = order.id)
+        payment = Payment.objects.get(payment_id = transID)
+        
+        subtotal =0
+        for i in ordered_products:
+            subtotal += i.product_price * i.quantity
+
+        context = {
+            'order' : order,
+            'ordered_products' : ordered_products,
+            'order_number': order.order_number ,
+            'transID' : payment.payment_id,
+            'payment' : payment,
+            'subtotal': subtotal
+        }
+        return render (request, 'orders/order_complete.html',context)
+    except (Payment.DoesNotExist, Order.DoesNotExist):
+        return redirect ('home')
+
 
 
 
 # from django.shortcuts import render, redirect
 # from carts.models import CartItem
 # from .forms import OrderForm
-# import datetime
+# import datetime  
 # from .models import Order
 
 # def place_order(request, total=0, quantity=0):

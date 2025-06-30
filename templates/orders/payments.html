@@ -160,6 +160,7 @@
     var csrftoken = getCookie('csrftoken');
     var orderID = "{{order.order_number}}"
     var payment_method = "paypal"
+    var redirect_url  = "{% url 'order_complete' %}" 
 
     paypal.Buttons({
 
@@ -167,7 +168,7 @@
         style: {
                 color:  'blue',
                 shape:  'pill',
-                label:  'pay',
+                label:  'pay',   
                 height: 40
             },
 
@@ -205,14 +206,23 @@
                     })
 
                 })
-             //   .then(response => response.json())
-             //   .then(data => console.log(data))
+                .then((response)=> response.json())
+                .then((data) => {
+                    console.log("Redirecting to:", redirect_url + '?order_number=' + data.order_number + '&payment_id=' + data.transID);
+                    window.location.href = redirect_url + '?order_number=' + data.order_number + '&payment_id=' + data.transID;
+                })
+
+            
             }
         });
         }  
 
     }).render('#paypal-button-container');
 
+    // window.location.href = redirect_url + '?order_number='+data.order_number+'&payment_id='+data.transID;
+
 </script>
 
+
 {% endblock  %}
+
