@@ -1,0 +1,50 @@
+/* Hide Radio Button */
+.rate > input {
+  display: none;
+}
+
+.rate {
+  display: inline-block;
+  border: 0;
+}
+
+.rate > label {
+  float: right;
+}
+
+/* Showing the stars */
+.rate > label:before {
+  display: inline-block;
+  font-size: 1.1rem;
+  font-family: FontAwesome;
+  content: '\f005'; /* Star icon */
+  margin: 0;
+  padding: 0.3rem 2rem;
+  cursor: pointer;
+}  
+
+/* Half star */
+.rate .half:before {
+  content: '\f089'; /* Half star icon */
+  position: absolute;
+  padding-right: 0;
+}
+
+/* Click and hover */
+input:checked ~ label,
+label:hover ~ label {
+  color: #ff5a3b;
+}
+
+
+
+/* hover highlight */
+input:checked + label:hover, input:checked ~ label:hover, input:checked ~ label:hover ~ label,
+label:hover ~ input:checked ~ label {
+    color: #cc9000;
+}
+
+
+.rating-star i{
+  color: #ffb503 !important;
+}

@@ -68,7 +68,8 @@ class Account(AbstractBaseUser):
     # Link the custom manager to this model
     objects = MyAccountManager()
     
-    
+    def full_name(self):
+        return f" {self.first_name} {self.last_name}"
     # defining mandatory methods 
     # Method to return the email as the string representation of the user
     def __str__(self):
